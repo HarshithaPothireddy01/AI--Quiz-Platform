@@ -118,6 +118,12 @@ def is_logged_in():
 
 # ==================== EMAIL HELPER FUNCTION ====================
 def send_quiz_results_email(user_email, user_name, quiz_data):
+    print("📩 Email sending started...")
+    print("📩 Receiver:", user_email)
+    print("📩 Name:", user_name)
+    print("📩 Sender ENV:", os.getenv("EMAIL"))
+    print("📩 Password Exists:", "YES" if os.getenv("APP_PASSWORD") else "NO")
+
     """
     Send quiz results to user via email
     
@@ -349,6 +355,7 @@ Quiz Application Team
         
         print(f"✅ Email sent successfully to {user_email}")
         return True, "Email sent successfully"
+        
         
     except Exception as e:
         print(f"❌ Error sending email: {str(e)}")
@@ -793,6 +800,7 @@ def submit_answer(quiz_id):
     except Exception as e:
         print(f"Submit answer error: {e}")
         return jsonify({"error": "An error occurred while submitting answer"}), 500
+        
 
 
 @app.route("/api/submit/<quiz_id>", methods=["POST", "OPTIONS"])
@@ -883,7 +891,12 @@ def submit_quiz(quiz_id):
         
         email_success = False
         email_message = "Email skipped"
-        
+        print("📩 SUBMIT API HIT")
+        print("📩 Calling email function now...")
+        print("📩 Quiz ID:", quiz_id)
+        print("📩 User email:", quiz.get("email"))
+        print("📩 User name:", quiz.get("name"))
+
         try:
             email_success, email_message = send_quiz_results_email(
                 user_email=quiz["email"],
