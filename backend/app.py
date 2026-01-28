@@ -730,8 +730,14 @@ def submit_answer(quiz_id):
         quiz["answers"].append(answer)
         quiz["current_index"] += 1
         
+        print(f"📝 Answer submitted:")
+        print(f"   Question {quiz['current_index']}: {answer}")
+        print(f"   Total answers so far: {len(quiz['answers'])}")
+        print(f"   Answers: {quiz['answers']}")
+        
         # Check if quiz is complete
         if quiz["current_index"] >= len(quiz["questions"]):
+            print(f"✅ Quiz completed! All {len(quiz['questions'])} questions answered.")
             return jsonify({
                 "message": "Quiz completed!",
                 "completed": True
@@ -769,6 +775,11 @@ def submit_quiz(quiz_id):
         questions = quiz["questions"]
         user_answers = quiz["answers"]
         
+        print(f"📊 Quiz submission debug:")
+        print(f"   Total questions: {len(questions)}")
+        print(f"   User answers received: {len(user_answers)}")
+        print(f"   Answers: {user_answers}")
+        
         # Calculate score
         score = 0
         for i, question in enumerate(questions):
@@ -777,6 +788,8 @@ def submit_quiz(quiz_id):
         
         total_questions = len(questions)
         percentage = Decimal(str(round((score / total_questions) * 100, 2)))
+        
+        print(f"   Final score: {score}/{total_questions} ({percentage}%)")
         
         # Build detailed review
         review = []
