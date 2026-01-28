@@ -16,6 +16,8 @@ from groq import Groq
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from boto3.dynamodb.conditions import Attr
+
 
 
 # ==================== LOAD ENV ====================
@@ -41,6 +43,28 @@ CORS(app,
      origins=["http://localhost:5000", "http://127.0.0.1:5000", "http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001","https://elegant-semolina-8540aa.netlify.app"],
      allow_headers=["Content-Type", "Authorization"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+
+@app.after_request
+def add_cors_headers(response):
+    origin = request.headers.get("Origin")
+    allowed_origins = [
+        "http://localhost:5000",
+        "http://127.0.0.1:5000",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
+        "https://elegant-semolina-8540aa.netlify.app"
+    ]
+
+    if origin in allowed_origins:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+
+    return response
+
 
 # ==================== EMAIL CONFIGURATION ====================
 EMAIL = os.getenv('EMAIL')
@@ -829,7 +853,7 @@ def submit_quiz(quiz_id):
             "topic": quiz["topic"],
             "score": score,
             "total_questions": total_questions,
-            "percentage": percentage,
+            "percentage": Decimal(str(float(percentage))),
             "questions": questions,
             "answers": user_answers,
             "correct_answers": [q["answer"] for q in questions],
@@ -902,10 +926,8 @@ def quiz_history():
         
         # Scan for user's quizzes
         response = quiz_table.scan(
-            FilterExpression="user_id = :uid",
-            ExpressionAttributeValues={
-                ":uid": session["user_id"]
-            }
+            FilterExpression=Attr("user_id").eq(session["user_id"])
+
         )
         
         quizzes = response.get("Items", [])
