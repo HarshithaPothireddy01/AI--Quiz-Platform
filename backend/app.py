@@ -19,7 +19,6 @@ from email.mime.multipart import MIMEMultipart
 from boto3.dynamodb.conditions import Attr
 
 
-
 # ==================== LOAD ENV ====================
 load_dotenv()
 
@@ -344,7 +343,7 @@ Quiz Application Team
         msg.attach(part2)
         
         # Send email using Gmail SMTP
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=10) as server:
             server.login(EMAIL, APP_PASSWORD)
             server.send_message(msg)
         
@@ -882,11 +881,20 @@ def submit_quiz(quiz_id):
             'review': review
         }
         
-        email_success, email_message = send_quiz_results_email(
-            user_email=quiz["email"],
-            user_name=quiz["name"],
-            quiz_data=email_data
-        )
+        email_success = False
+        email_message = "Email skipped"
+        
+        try:
+            email_success, email_message = send_quiz_results_email(
+                user_email=quiz["email"],
+                user_name=quiz["name"],
+                quiz_data=email_data
+            )
+        except Exception as e:
+            print("❌ Email sending failed:", str(e))
+            email_success = False
+            email_message = "Email failed"
+
         
         # Clean up session
         del quiz_sessions[quiz_id]
