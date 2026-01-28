@@ -2,6 +2,7 @@ import os
 import json
 import uuid
 from datetime import datetime
+from datetime import timedelta
 from decimal import Decimal
 
 from flask import Flask, request, jsonify, session
@@ -16,12 +17,23 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+
 # ==================== LOAD ENV ====================
 load_dotenv()
 
 # ==================== FLASK APP ====================
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key-change-this-in-production")
+
+
+# ---------------- SESSION CONFIG ----------------
+app.config.update(
+    SESSION_COOKIE_NAME="quiz_session",
+    SESSION_COOKIE_SAMESITE="None",  # ✅ allow cross-origin
+    SESSION_COOKIE_SECURE=True,      # ✅ required for HTTPS
+    PERMANENT_SESSION_LIFETIME=timedelta(days=1)
+)
+
 
 # Configure CORS to allow credentials from React frontend on port 5000
 CORS(app, 
